@@ -115,3 +115,91 @@ exports.listUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+exports.updateUser = async (req, res) => {
+  const { userId } = req.params;
+  const currentUser = req.user;
+  const { fullName, role, isActive } = req.body;
+
+  try {
+    const userResult = await pool.query(
+      "SELECT tenant_id FROM users WHERE id = $1",
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const targetTenantId = userResult.rows[0].tenant_id;
+
+    // Tenant isolation
+    if (
+      currentUser.role !== "super_admin" &&
+      currentUser.tenantId !== targetTenantId
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // Self update: only fullName allowed
+    if (currentUser.userId === userId) {
+      await pool.query(
+        "UPDATE users SET full_name = $1 WHERE id = $2",
+        [fullName, userId]
+      );
+      return res.json({ success: true, message: "Profile updated" });
+    }
+
+    // Admin update
+    if (currentUser.role !== "tenant_admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    await pool.query(
+      `UPDATE users
+       SET full_name = $1, role = $2, is_active = $3
+       WHERE id = $4`,
+      [fullName, role, isActive, userId]
+    );
+
+    res.json({ success: true, message: "User updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+  const currentUser = req.user;
+
+  try {
+    if (currentUser.userId === userId) {
+      return res.status(403).json({ message: "Cannot delete self" });
+    }
+
+    const userResult = await pool.query(
+      "SELECT tenant_id FROM users WHERE id = $1",
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      currentUser.role !== "tenant_admin" ||
+      currentUser.tenantId !== userResult.rows[0].tenant_id
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    await pool.query(
+      "UPDATE tasks SET assigned_to = NULL WHERE assigned_to = $1",
+      [userId]
+    );
+
+    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+
+    res.json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
