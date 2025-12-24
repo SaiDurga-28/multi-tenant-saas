@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const authController = require("../controllers/auth.controller");
 
-// Login API (to be implemented)
-router.post("/login", (req, res) => {
-  res.json({ message: "Login endpoint placeholder" });
-});
+router.post("/login", authController.login);
 
 module.exports = router;
