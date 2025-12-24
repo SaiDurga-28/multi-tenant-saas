@@ -4,6 +4,7 @@ const authRoutes = require("./routes/auth.routes");
 const tenantRoutes = require("./routes/tenant.routes");
 const userRoutes = require("./routes/user.routes");
 const projectRoutes = require("./routes/project.routes");
+const taskRoutes = require("./routes/task.routes");
 
 require("dotenv").config();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tenants", tenantRoutes);
 app.use("/api/tenants", userRoutes);
 app.use("/api/projects", projectRoutes);
+app.use("/api", taskRoutes);
 
 // Server
 const PORT = process.env.BACKEND_PORT || 5000;
