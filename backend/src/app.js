@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const authRoutes = require("./routes/auth.routes");
 require("dotenv").config();
 
 const app = express();
@@ -15,7 +16,7 @@ app.get("/api/health", (req, res) => {
     message: "Backend is healthy",
   });
 });
-
+app.use("/api/auth", authRoutes);
 // Server
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => {
