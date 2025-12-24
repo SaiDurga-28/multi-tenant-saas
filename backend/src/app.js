@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const tenantRoutes = require("./routes/tenant.routes");
+const userRoutes = require("./routes/user.routes");
 require("dotenv").config();
 
 const app = express();
@@ -19,6 +20,7 @@ app.get("/api/health", (req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/tenants", tenantRoutes);
+app.use("/api/tenants", userRoutes);
 // Server
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => {
