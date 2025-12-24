@@ -56,3 +56,62 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+exports.listUsers = async (req, res) => {
+  const { tenantId } = req.params;
+  const currentUser = req.user;
+
+  // Tenant isolation
+  if (currentUser.role !== "super_admin" && currentUser.tenantId !== tenantId) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  const search = req.query.search || "";
+  const role = req.query.role;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 50;
+  const offset = (page - 1) * limit;
+
+  let query = `
+    SELECT id, email, full_name, role, is_active, created_at
+    FROM users
+    WHERE tenant_id = $1
+      AND (email ILIKE $2 OR full_name ILIKE $2)
+  `;
+
+  const params = [tenantId, `%${search}%`];
+
+  if (role) {
+    query += ` AND role = $3`;
+    params.push(role);
+  }
+
+  query += ` ORDER BY created_at DESC LIMIT $4 OFFSET $5`;
+
+  try {
+    const users = await pool.query(query, [
+      ...params,
+      limit,
+      offset
+    ]);
+
+    const total = await pool.query(
+      "SELECT COUNT(*) FROM users WHERE tenant_id = $1",
+      [tenantId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        users: users.rows,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total.rows[0].count / limit),
+          totalUsers: parseInt(total.rows[0].count),
+          limit
+        }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
