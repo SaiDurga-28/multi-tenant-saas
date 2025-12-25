@@ -5,6 +5,12 @@ const { jwtSecret, jwtExpiresIn } = require("../config/jwt");
 
 exports.login = async (req, res) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid request"
+  });
+}
     const { email, password } = req.body;
 
     if (!email || !password) {
