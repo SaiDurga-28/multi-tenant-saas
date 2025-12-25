@@ -7,10 +7,7 @@ done
 
 echo "Database is ready"
 
-echo "Running migrations..."
-npm run migrate
-
-echo "SQL seed files will be loaded via database initialization"
+echo "Using SQL migrations and seed files"
 
 echo "Starting backend..."
 node src/app.js
