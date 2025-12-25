@@ -14,4 +14,6 @@ COPY . .
 ENV NODE_ENV=production
 EXPOSE 5000
 
-CMD ["node", "src/app.js"]
+RUN chmod +x start.sh
+CMD ["sh", "start.sh"]
+
