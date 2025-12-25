@@ -12,7 +12,9 @@ exports.login = async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT id, email, password, role, tenant_id FROM users WHERE email = $1",
+      `SELECT id, tenant_id, email, password_hash, role, is_active
+       FROM users
+       WHERE email = $1`,
       [email]
     );
 
@@ -22,7 +24,7 @@ exports.login = async (req, res) => {
 
     const user = result.rows[0];
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -38,6 +40,7 @@ exports.login = async (req, res) => {
     );
 
     res.status(200).json({
+      success: true,
       message: "Login successful",
       token,
     });
