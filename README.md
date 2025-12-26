@@ -140,7 +140,7 @@ GET /api/health
 ### Demo Video
 A full demo video covering architecture, features, and application flow is available here:
 
-- Demo Video Link: 
+- Demo Video Link: https://drive.google.com/file/d/1yJCdly7eeq6HIpdK036FE1sqfrF-2M3B/view?usp=drive_link
 
 ### Notes
 Tenant data is fully isolated using tenant_id
